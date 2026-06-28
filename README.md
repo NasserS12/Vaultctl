@@ -46,7 +46,7 @@ sudo python3 main.py
 
 ```bash
 git clone https://github.com/NasserS12/Vaultctl.git
-cd vaultctl
+cd Vaultctl
 pip install -r requirements.txt
 python3 main.py
 ```
