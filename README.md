@@ -96,19 +96,6 @@ All significant events are written to `diagnostic_tool.log` in the same director
 2025-01-15 14:35:12 [INFO] Service neutralized: whoopsie
 ```
 
----
-
-## Project Structure
-
-```
-vaultctl/
-├── main.py          # Single-file application (all modules)
-├── requirements.txt # Python dependencies
-└── README.md        # This file
-```
-
----
-
 ## Author
 
 Developed by **Nasser**
