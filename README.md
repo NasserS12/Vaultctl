@@ -45,7 +45,7 @@ sudo python3 main.py
 ## Install from source
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/vaultctl.git
+git clone https://github.com/NasserS12/Vaultctl.git
 cd vaultctl
 pip install -r requirements.txt
 python3 main.py
