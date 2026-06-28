@@ -50,7 +50,7 @@ BLUE = "\033[94m"
 DIM = "\033[2m"
 BOLD = "\033[1m"
 
-# رموز موحدة للحالات
+# Unified status icons
 OK = f"{GREEN}✓{RESET}"
 WARN = f"{YELLOW}⚠{RESET}"
 FAIL = f"{RED}✗{RESET}"
@@ -146,9 +146,7 @@ def wait_for_enter():
 def clear_screen():
     """Clears the terminal screen and scrollback buffer
     using fast ANSI escape codes."""
-    # \033[H  = Home cursor
-    # \033[2J = Clear screen
-    # \033[3J = Clear scrollback buffer (prevents 'copies' when scrolling up)
+    # ANSI escape sequences to clear screen and scrollback buffer
     print("\033[H\033[2J\033[3J", end="", flush=True)
 
 
@@ -173,12 +171,11 @@ def get_confirmation(prompt_text):
             ans = input(prompt_text).lower().strip()
             if ans in ['y', 'yes', '1']:
                 return True
-            if ans in ['n', 'no', '0', '']:  # Empty string defaults to No
+            if ans in ['n', 'no', '0', '']:
                 return False
-            # Show error temporarily
             print(f"{RED}  [!] Invalid input{RESET}", end="", flush=True)
             time.sleep(1.5)
-            # Surgical Clear: Wipe error line and previous prompt line
+            # Clear the error and prompt lines for a clean re-ask
             print("\r\033[K\033[A\r\033[K", end="", flush=True)
         except (KeyboardInterrupt, EOFError):
             return False
@@ -403,7 +400,6 @@ def show_pending_updates():
                 print(f"  → {pkg}")
         else:
             print(f"Status : {RED}! {count} updates pending{RESET}")
-            # Show first 5 only
             for line in lines[:5]:
                 pkg = line.split('/')[0]
                 print(f"  → {pkg}")
@@ -954,19 +950,19 @@ def manage_processes_live():
                         f"{RED}Access Denied{RESET} "
                         f"(Requires Real Root UID 0)")
 
-                # improvement #6 — full command line
+                # Full command line (args) used to launch the process
                 try:
                     p_cmdline = ' '.join(proc.cmdline()) or p_exe
                 except (psutil.NoSuchProcess, psutil.AccessDenied):
                     p_cmdline = f"{RED}Access Denied{RESET}"
 
-                # improvement #5 — open file count
+                # Number of file descriptors the process has open
                 try:
                     p_open_files = len(proc.open_files())
                 except (psutil.NoSuchProcess, psutil.AccessDenied):
                     p_open_files = "N/A"
 
-                # improvement #4 — network connections
+                # Active network connections owned by this process
                 try:
                     p_conns = len(proc.connections())
                 except (psutil.NoSuchProcess, psutil.AccessDenied):
@@ -991,9 +987,7 @@ def manage_processes_live():
                     p_cmdline if len(p_cmdline) <= 80
                     else p_cmdline[:80] + f"{DIM}...{RESET}")
                 print(f"{YELLOW}Command Line      :{RESET} {p_cmdline_display}")  # noqa: E501
-                # improvement #5
                 print(f"{YELLOW}Open Files        :{RESET} {p_open_files}")
-                # improvement #4
                 print(f"{YELLOW}Network Conns     :{RESET} {p_conns}")
 
                 if p_user == "root" and os.getuid() != 0:
@@ -1002,7 +996,7 @@ def manage_processes_live():
                         f"process belongs to Root.{RESET}")
                     print(
                         f"{YELLOW}    Run as: "
-                        f"sudo python3 test.py for full access.{RESET}")
+                        f"sudo python3 main.py for full access.{RESET}")
 
                 print(f"\n{GREEN}{'=' * 60}{RESET}")
                 print(
@@ -1111,16 +1105,13 @@ def audit_open_ports():
     print(f"{CYAN}[*] Auditing Network Connections & Sockets...{RESET}")
     try:
         def parse_ss_line(line):
-            # ULTRA-ROBUST PARSING: extract clean name even if columns shift or
-            # merge
+            # Extract process name from ss output (handles variable columns)
             process = "Unknown"
-            # 1. Surgical regex for process name
             proc_match = re.search(r'users:\(\("([^"]+)"', line)
             if proc_match:
                 process = proc_match.group(1)
 
-            # 2. Extract addresses by removing the users blob and looking for
-            # colons
+            # Strip user info to extract local/remote addresses
             clean_line = re.sub(r'users:.*', '', line).strip()
             parts = re.split(r'\s+', clean_line)
             addrs = [p for p in parts if ":" in p]
