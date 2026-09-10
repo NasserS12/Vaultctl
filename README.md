@@ -2,7 +2,7 @@
 
 > **Know Your System. Own Your Security.**
 
-A single-file Python CLI tool that scans, monitors, and hardens your Ubuntu/Linux system — no installation required beyond `psutil`.
+A Python CLI tool that scans, monitors, and hardens your Ubuntu/Linux system — no installation required beyond `psutil`.
 
 ---
 
@@ -22,6 +22,7 @@ A single-file Python CLI tool that scans, monitors, and hardens your Ubuntu/Linu
 
 - **Python 3.12+** — uses PEP 701 f-string syntax
 - **psutil ≥ 6.0.0** — cross-platform process and system metrics
+- **pytest** *(optional, dev only)* — required only if you want to run the test suite
 
 ---
 
@@ -50,6 +51,45 @@ cd Vaultctl
 pip install -r requirements.txt
 python3 main.py
 ```
+
+---
+
+## Project Structure
+
+The codebase is organized by responsibility. `main.py` is the entry point only — it wires together the menu loop and delegates all real work to the modules below.
+
+```
+vaultctl/
+├── main.py                    # Entry point — main menu & startup banner
+├── requirements.txt
+├── pytest.ini
+├── ui/
+│   ├── colors.py               # ANSI colors & unified status icons (OK/WARN/FAIL)
+│   └── terminal.py             # Echo control, raw-mode input, confirmations
+├── core/
+│   ├── logging_setup.py        # Shared logging configuration
+│   └── sudo.py                 # Privilege checks & helpers
+├── modules/
+│   ├── system_scan.py          # [1] Full System Scan
+│   ├── process_manager.py      # [2] Live Process Manager
+│   ├── network_audit.py        # [3] Network & Firewall Audit
+│   ├── ssh_audit.py            # [4] SSH Security Hardening
+│   └── service_optimizer.py    # [5] Service Optimizer
+└── tests/                      # pytest unit tests (see "Running Tests" below)
+```
+
+---
+
+## Running Tests
+
+The project ships with a pytest suite covering the security-critical parsing and decision logic (sshd_config parsing, service blacklist protection, network output parsing).
+
+```bash
+pip install pytest --break-system-packages
+pytest tests/ -v
+```
+
+All tests run against pure, isolated functions — they do **not** touch your real system, network, or require sudo.
 
 ---
 
