@@ -39,6 +39,25 @@ def get_smart_val(content, key):
     return active or comment, active is not None
 
 
+def is_2fa_ssh_ready(v_kbd, v_chall):
+    """True if EITHER `KbdInteractiveAuthentication` or
+    `ChallengeResponseAuthentication` is set to 'yes'.
+
+    Extracted as a small, pure, directly-testable function after a bug
+    was found in the inline expression that used to live in
+    `audit_ssh_security`:
+
+        is_ssh_ready = (v_kbd or v_chall) == 'yes'
+
+    `or` between two strings returns the first *truthy* value, so if
+    `v_kbd` is a non-empty string like 'no', it is returned as-is and
+    `v_chall` is never even inspected -- silently ignoring a 'yes' on
+    the other directive. The fix checks membership instead of relying
+    on short-circuit `or`.
+    """
+    return 'yes' in (v_kbd, v_chall)
+
+
 def audit_ssh_security():
     clear_screen()
     print(f"{CYAN}{BOLD}❯ SSH DEEP SECURITY & HARDENING AUDIT{RESET}\n")
@@ -292,16 +311,7 @@ def audit_ssh_security():
                     v_chall, a_chall = get_smart_val(
                         content, "ChallengeResponseAuthentication")
                     is_pam_ready = pam_res.returncode == 0
-                    # KNOWN BUG (kept intentionally for the upcoming tests
-                    # session — see project chat): this should check
-                    # whether EITHER directive is 'yes', e.g.
-                    #   is_ssh_ready = 'yes' in (v_kbd, v_chall)
-                    # but `(v_kbd or v_chall) == 'yes'` only evaluates the
-                    # first non-empty string, silently ignoring the other
-                    # directive. Left unchanged here on purpose: this is a
-                    # pure structural refactor, not a behavior fix.
-                    is_ssh_ready = (
-                        (v_kbd or v_chall) == 'yes')
+                    is_ssh_ready = is_2fa_ssh_ready(v_kbd, v_chall)
                     two_fa_active = is_pam_ready and is_ssh_ready
                 except Exception:
                     pass
