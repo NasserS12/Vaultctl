@@ -244,11 +244,42 @@ def get_os_pretty_name():
             return line.split('=', 1)[1].strip('"')
     return "Unknown Linux"
 
+
+def get_package_counts():
+    """Return a formatted string like '1744 (dpkg), 20 (snap)'."""
+    dpkg_count = 0
+    try:
+        result = subprocess.run(
+        ['dpkg-query', '-f', '${db:Status-Status}\n', '-W'],
+        capture_output=True, text=True, timeout=5
+    )
+        dpkg_count = sum(
+            1 for line in result.stdout.strip().splitlines()
+            if line.strip() == 'installed'
+        )
+    except Exception as e:
+        logger.debug(f"dpkg package count failed: {e}")
+
+    snap_count = 0
+    try:
+        result = subprocess.run(
+            ['snap', 'list'],
+            capture_output=True, text=True, timeout=5
+        )
+        lines = result.stdout.strip().splitlines()
+        snap_count = max(0, len(lines) - 1)
+    except Exception as e:
+        logger.debug(f"snap pakage count failed: {e}")
+
+    return f"{dpkg_count} (dpkg), {snap_count} (snap)"
+
+
 def show_sys_info():
     section_header("SYSTEM INFORMATION")
     print(f"  {DIM}Hostname{RESET}  {WHITE}{platform.node()}{RESET}")
     print(f"  {DIM}OS      {RESET}  {WHITE}{get_os_pretty_name()}{RESET}")
     print(f"  {DIM}Kernel  {RESET}  {WHITE}{platform.release()}{RESET}")
+    print(f"  {DIM}Package{RESET} {WHITE}{get_package_counts()}{RESET}")
     print(f"  {DIM}Arch    {RESET}  {WHITE}{platform.machine()}{RESET}")
     print(f"  {DIM}Uptime  {RESET}  {WHITE}{get_uptime()}{RESET}")  
     print(f"{DIM}{'-' * TERMINAL_WIDTH}{RESET}")
