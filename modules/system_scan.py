@@ -250,28 +250,7 @@ def show_sys_info():
     print(f"  {DIM}OS      {RESET}  {WHITE}{get_os_pretty_name()}{RESET}")
     print(f"  {DIM}Kernel  {RESET}  {WHITE}{platform.release()}{RESET}")
     print(f"  {DIM}Arch    {RESET}  {WHITE}{platform.machine()}{RESET}")
-    print(f"  {DIM}Uptime  {RESET}  {WHITE}{get_uptime()}{RESET}")
-
-    try:
-        load1, load5, load15 = os.getloadavg()
-        cores = psutil.cpu_count() or 1
-
-        def get_load_color(load_val):
-            if load_val < cores * 0.7:
-                return GREEN
-            if load_val < cores:
-                return YELLOW
-            return RED
-        print(
-            f"  {DIM}Load Avg{RESET}  " f"{
-                get_load_color(load1)}{
-                load1:.2f}{RESET}  " f"{
-                get_load_color(load5)}{
-                    load5:.2f}{RESET}  " f"{
-                        get_load_color(load15)}{
-                            load15:.2f}{RESET}  {DIM}(1m · 5m · 15m){RESET}")
-    except Exception as e:
-        logger.debug(f"show_sys_info load avg failed: {e}")
+    print(f"  {DIM}Uptime  {RESET}  {WHITE}{get_uptime()}{RESET}")  
     print(f"{DIM}{'-' * TERMINAL_WIDTH}{RESET}")
 
 
