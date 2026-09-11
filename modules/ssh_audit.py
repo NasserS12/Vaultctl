@@ -10,8 +10,10 @@ import time
 
 from core.logging_setup import logger
 from core.sudo import check_sudo
-from ui.colors import RESET, CYAN, GREEN, YELLOW, RED, WHITE, DIM, BOLD, OK, TERMINAL_WIDTH
-from ui.terminal import clear_screen, terminal_manager, wait_for_enter
+from ui.colors import RESET, CYAN, GREEN, YELLOW, RED, WHITE, DIM, OK, TERMINAL_WIDTH
+from ui.terminal import (
+    clear_screen, terminal_manager, section_header, footer_prompt,
+)
 
 
 def get_smart_val(content, key):
@@ -60,7 +62,8 @@ def is_2fa_ssh_ready(v_kbd, v_chall):
 
 def audit_ssh_security():
     clear_screen()
-    print(f"{CYAN}{BOLD}❯ SSH DEEP SECURITY & HARDENING AUDIT{RESET}\n")
+    section_header("SSH DEEP SECURITY & HARDENING AUDIT")
+    print()
     if not check_sudo():
         print(f"\n{RED}[!] Audit Aborted.{RESET}")
         time.sleep(1.5)
@@ -74,14 +77,14 @@ def audit_ssh_security():
             stdout=subprocess.PIPE, text=True)
         if status_check.stdout.strip() != "active":
             print(
-                f"Service Status: {RED}● INACTIVE "
+                f"Service Status: {RED}[INACTIVE] "
                 f"(Offline / Secured from Network){RESET}")
             print(
                 f"{YELLOW}[!] Notice: Analyzing configuration for "
                 f"future risk mitigation...{RESET}")
         else:
             print(
-                f"Service Status: {GREEN}● ACTIVE "
+                f"Service Status: {GREEN}[ACTIVE] "
                 f"(Listening for connections){RESET}")
     except Exception as e:
         logger.debug(f"SSH service status check failed: {e}")
@@ -129,8 +132,7 @@ def audit_ssh_security():
 
             if scanned:
                 print(
-                    f"{GREEN}[✓] Scanned {
-                        len(scanned)} config file(s).{RESET}")
+                    f"{OK} Scanned {len(scanned)} config file(s).")
 
                 v_port, a_port = get_smart_val(content, "Port")
                 v_root, a_root = get_smart_val(content, "PermitRootLogin")
@@ -277,17 +279,17 @@ def audit_ssh_security():
                 if f2b_active:
                     print(
                         f"{'Fail2Ban Service':<25} | "
-                        f"{GREEN}● ACTIVE{RESET}             | "
+                        f"{GREEN}[ACTIVE]{RESET}             | "
                         f"{GREEN}[ SECURE  ]{RESET}")
                 elif cs_active:
                     print(
                         f"{'CrowdSec Service':<25} | "
-                        f"{GREEN}● ACTIVE{RESET}             | "
+                        f"{GREEN}[ACTIVE]{RESET}             | "
                         f"{GREEN}[ SECURE  ]{RESET}")
                 else:
                     print(
                         f"{'Brute-Force Prot.':<25} | "
-                        f"{RED}● NOT DETECTED{RESET}       | "
+                        f"{RED}[NOT DETECTED]{RESET}       | "
                         f"{RED}[  RISK   ]{RESET}")
                     print(
                         f"  {YELLOW}→{RESET} {WHITE}Install Fail2Ban "
@@ -319,12 +321,12 @@ def audit_ssh_security():
                 if two_fa_active:
                     print(
                         f"{'Two-Factor Auth':<25} | "
-                        f"{GREEN}● CONFIGURED{RESET}         | "
+                        f"{GREEN}[CONFIGURED]{RESET}         | "
                         f"{GREEN}[ SECURE  ]{RESET}")
                 else:
                     print(
                         f"{'Two-Factor Auth':<25} | "
-                        f"{RED}● NOT CONFIGURED{RESET}     | "
+                        f"{RED}[NOT CONFIGURED]{RESET}     | "
                         f"{RED}[  RISK   ]{RESET}")
                     print(
                         f"  {YELLOW}→{RESET} {WHITE}Enable 2FA "
@@ -354,6 +356,4 @@ def audit_ssh_security():
         except Exception as e:
             print(f"{RED}[X] Error: {e}{RESET}")
 
-    print(f"{DIM}{'-' * TERMINAL_WIDTH}{RESET}")
-    print(f"\n{YELLOW}Press Enter to return...{RESET}", end="", flush=True)
-    wait_for_enter()
+    footer_prompt("return to menu")

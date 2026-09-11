@@ -7,7 +7,7 @@ import time
 from contextlib import contextmanager
 
 from core.logging_setup import logger
-from ui.colors import RED, RESET
+from ui.colors import RED, RESET, CYAN, BOLD, DIM, TERMINAL_WIDTH
 
 
 def early_lock_terminal():
@@ -97,6 +97,30 @@ def wait_for_enter():
             input("")  # fallback
     else:
         input("")  # Windows fallback
+
+
+def section_header(title):
+    """Prints the standard boxed section header used at the top of
+    every module screen, e.g.:
+
+        =================================================================
+         [ TITLE ]
+        =================================================================
+    """
+    bar = '=' * TERMINAL_WIDTH
+    print(f"{CYAN}{bar}{RESET}")
+    print(f"{CYAN}{BOLD} [ {title} ]{RESET}")
+    print(f"{CYAN}{bar}{RESET}")
+
+
+def footer_prompt(message="return to menu"):
+    """Prints the standard footer and blocks until Enter is pressed."""
+    print(f"{DIM}{'-' * TERMINAL_WIDTH}{RESET}")
+    print(
+        f"\n {CYAN}[Enter]{RESET} {message}   {DIM}|{RESET}   "
+        f"{CYAN}[Ctrl+C]{RESET} exit",
+        end="", flush=True)
+    wait_for_enter()
 
 
 def clear_screen():

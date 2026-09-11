@@ -9,8 +9,11 @@ import psutil
 from datetime import datetime
 
 from core.logging_setup import logger
-from ui.colors import RESET, CYAN, GREEN, YELLOW, RED, WHITE, DIM, BOLD
-from ui.terminal import clear_screen, flush_input, get_confirmation, wait_for_enter
+from ui.colors import RESET, CYAN, GREEN, YELLOW, RED, WHITE, DIM
+from ui.terminal import (
+    clear_screen, flush_input, get_confirmation,
+    section_header, footer_prompt,
+)
 
 KERNEL_PID_THRESHOLD = 100
 
@@ -69,7 +72,7 @@ def manage_processes_live():
             sig_sent = "SIGKILL" if force else "SIGTERM"
             logger.info(f"Sent {sig_sent} to PID {pid_target} ({proc_name}).")
             print(
-                f"\n{GREEN}[✓] {sig_sent} sent to "
+                f"\n{GREEN}[ OK ] {sig_sent} sent to "
                 f"\"{proc_name}\" (PID {pid_target}).{RESET}")
         except psutil.NoSuchProcess:
             print(f"\n{YELLOW}[!] Process already exited.{RESET}")
@@ -105,7 +108,7 @@ def manage_processes_live():
         mode_text = "CPU USAGE" if sort_by == 'cpu_percent' else "MEMORY USAGE"
 
         # --- Header ---
-        print(f"{CYAN}{BOLD}❯ PROCESS MANAGER — SORT: {mode_text}{RESET}")
+        section_header(f"PROCESS MANAGER — SORT: {mode_text}")
         print()
 
         # --- Summary bar ---
@@ -310,12 +313,7 @@ def manage_processes_live():
                         f"sudo python3 main.py for full access.{RESET}")
 
                 print(f"\n{GREEN}{'=' * 60}{RESET}")
-                print(
-                    f"\n{YELLOW}Press Enter to resume "
-                    f"live monitoring...{RESET}",
-                    end="",
-                    flush=True)
-                wait_for_enter()
+                footer_prompt("resume live monitoring")
 
             except psutil.AccessDenied:
                 print(

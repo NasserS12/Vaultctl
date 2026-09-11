@@ -10,10 +10,11 @@ BLUE = "\033[94m"
 DIM = "\033[2m"
 BOLD = "\033[1m"
 
-# Unified status icons
-OK = f"{GREEN}✓{RESET}"
-WARN = f"{YELLOW}⚠{RESET}"
-FAIL = f"{RED}✗{RESET}"
-INFO = f"{CYAN}•{RESET}"
+# Unified status badges (ASCII bracket tags — one vocabulary used by
+# every module, safe to render over any terminal/SSH session).
+OK = f"{GREEN}[ OK ]{RESET}"
+WARN = f"{YELLOW}[WARNING]{RESET}"
+FAIL = f"{RED}[ RISK ]{RESET}"
+INFO = f"{CYAN}[i]{RESET}"
 
 TERMINAL_WIDTH = 65

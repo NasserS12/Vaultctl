@@ -14,10 +14,12 @@ import psutil
 from core.logging_setup import logger
 from core.sudo import check_sudo
 from ui.colors import (
-    RESET, CYAN, GREEN, YELLOW, RED, WHITE, DIM, BOLD,
+    RESET, CYAN, GREEN, YELLOW, RED, WHITE, DIM,
     OK, WARN, FAIL, TERMINAL_WIDTH,
 )
-from ui.terminal import terminal_manager, wait_for_enter, clear_screen
+from ui.terminal import (
+    terminal_manager, clear_screen, section_header, footer_prompt,
+)
 
 # Well-known trusted DNS servers
 TRUSTED_DNS = {
@@ -69,9 +71,9 @@ def audit_ufw_firewall():
 
         output = res.stdout.lower()
         if "inactive" in output:
-            print(f"Status: {RED}● INACTIVE (System Unprotected){RESET}")
+            print(f"Status: {RED}[INACTIVE] System Unprotected{RESET}")
         elif "active" in output:
-            print(f"Status: {GREEN}● ACTIVE (Secured){RESET}")
+            print(f"Status: {GREEN}[ACTIVE] Secured{RESET}")
             rules = [line.strip()
                      for line in res.stdout.split('\n') if line.strip()][1:6]
             if rules:
@@ -99,7 +101,7 @@ def audit_open_ports():
         if res_l.returncode == 0:
             lines = res_l.stdout.strip().split('\n')
             if len(lines) <= 1:
-                print(f"    {GREEN}● No listening ports found.{RESET}")
+                print(f"    {OK} No listening ports found.")
             else:
                 print(
                     f"    {
@@ -142,7 +144,7 @@ def audit_open_ports():
             established = [line for line in lines if 'ESTAB' in line]
 
             if not established:
-                print(f"    {GREEN}● No active user connections found.{RESET}")
+                print(f"    {OK} No active user connections found.")
             else:
                 print(
                     f"    {
@@ -173,7 +175,7 @@ def audit_open_ports():
 
 def audit_arp_table():
     """Display ARP table to detect unknown devices on the local network."""
-    print(f"{CYAN}{BOLD}❯ ARP TABLE — LOCAL NETWORK DEVICES{RESET}")
+    section_header("ARP TABLE — LOCAL NETWORK DEVICES")
     try:
         res = subprocess.run(
             ['arp', '-n'], capture_output=True, text=True, timeout=5.0)
@@ -219,7 +221,7 @@ def audit_arp_table():
 
 def audit_dns_servers():
     """Check configured DNS servers for suspicious or unexpected entries."""
-    print(f"{CYAN}{BOLD}❯ DNS SERVER AUDIT{RESET}")
+    section_header("DNS SERVER AUDIT")
     try:
         dns_servers = []
 
@@ -309,7 +311,7 @@ def audit_dns_servers():
 
 
 def show_network_status():
-    print(f"{CYAN}{BOLD}❯ NETWORK & CONNECTIVITY{RESET}")
+    section_header("NETWORK & CONNECTIVITY")
 
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -383,7 +385,8 @@ def show_network_status():
 
 def show_network_audit():
     clear_screen()
-    print(f"{CYAN}{BOLD}❯ NETWORK DIAGNOSTICS & SECURITY AUDIT{RESET}\n")
+    section_header("NETWORK DIAGNOSTICS & SECURITY AUDIT")
+    print()
     if not check_sudo():
         print(f"\n{RED}[!] Audit Aborted.{RESET}")
         time.sleep(1.5)
@@ -397,6 +400,4 @@ def show_network_audit():
         print(f"{DIM}{'-' * TERMINAL_WIDTH}{RESET}")
         audit_arp_table()
         audit_dns_servers()
-    print(f"{DIM}{'-' * TERMINAL_WIDTH}{RESET}")
-    print(f"\n{YELLOW}Press [Enter] to return...{RESET}", end="", flush=True)
-    wait_for_enter()
+    footer_prompt("return to menu")

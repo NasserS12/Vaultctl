@@ -11,8 +11,8 @@ from core.logging_setup import logger
 from core.sudo import check_sudo
 from ui.colors import RESET, CYAN, GREEN, YELLOW, RED, WHITE, DIM, BOLD, TERMINAL_WIDTH
 from ui.terminal import (
-    terminal_manager, get_confirmation, wait_for_enter, clear_screen,
-    flush_input,
+    terminal_manager, get_confirmation, clear_screen,
+    flush_input, section_header, footer_prompt,
 )
 
 # SAFETY BLACKLIST — these can NEVER be masked by the optimizer,
@@ -37,107 +37,107 @@ SERVICE_CATALOG = {
         "desc": "Manages wireless connections for headsets, mice, and keyboards. "
                 "Disable if you only use wired devices to save power and improve "
                 "security.",
-        "safety": f"{YELLOW}⚠️  CAUTION.{RESET}"
+        "safety": f"{YELLOW}[WARNING] CAUTION.{RESET}"
     },
     "cups": {
         "desc": "The Common Unix Printing System. Responsible for all local and "
                 "network printing tasks. Disable only if this machine never "
                 "needs to print documents.",
-        "safety": f"{YELLOW}⚠️  CAUTION.{RESET}"
+        "safety": f"{YELLOW}[WARNING] CAUTION.{RESET}"
     },
     "cups-browsed": {
         "desc": "A sub-service of CUPS that automatically 'discovers' and adds "
                 "new printers found on your network. Safe to disable if you "
                 "manually add printers.",
-        "safety": f"{GREEN}✅ SAFE.{RESET}"
+        "safety": f"{GREEN}[ OK ] SAFE.{RESET}"
     },
     "avahi-daemon": {
         "desc": "Implements Zeroconf networking (mDNS/DNS-SD), allowing your PC "
                 "to find local services like Apple AirPlay or Chromecast "
                 "without a DNS server. Disable to reduce network noise.",
-        "safety": f"{GREEN}✅ SAFE.{RESET}"
+        "safety": f"{GREEN}[ OK ] SAFE.{RESET}"
     },
     "whoopsie": {
         "desc": "Ubuntu's crash reporting submission daemon. It uploads 'oops' "
                 "data to Canonical when a program fails. Safe to disable; "
                 "does not affect system stability.",
-        "safety": f"{GREEN}✅ VERY SAFE.{RESET}"
+        "safety": f"{GREEN}[ OK ] VERY SAFE.{RESET}"
     },
     "geoclue": {
         "desc": "Location-aware service that provides your coordinates to apps "
                 "like GNOME Maps or Weather. Disable if you prefer privacy "
                 "or don't use location-based apps.",
-        "safety": f"{GREEN}✅ VERY SAFE.{RESET}"
+        "safety": f"{GREEN}[ OK ] VERY SAFE.{RESET}"
     },
     "ModemManager": {
         "desc": "Controls 2G/3G/4G/5G mobile broadband modems (USB dongles or "
                 "built-in SIM slots). Safe to disable if you only use "
                 "Ethernet or Wi-Fi.",
-        "safety": f"{GREEN}✅ SAFE.{RESET}"
+        "safety": f"{GREEN}[ OK ] SAFE.{RESET}"
     },
     "colord": {
         "desc": "Manages color profiles for monitors, printers, and scanners. "
                 "Essential for photographers/designers; safe to disable for "
                 "general server or coding use.",
-        "safety": f"{GREEN}✅ SAFE.{RESET}"
+        "safety": f"{GREEN}[ OK ] SAFE.{RESET}"
     },
     "chrony": {
         "desc": "An implementation of the Network Time Protocol (NTP). It keeps "
                 "your system clock perfectly synchronized. Only disable if "
                 "you have another time sync tool.",
-        "safety": f"{GREEN}✅ SAFE.{RESET}"
+        "safety": f"{GREEN}[ OK ] SAFE.{RESET}"
     },
     "snap.canonical-livepatch.canonical-livepatch": {
         "desc": "Enables applying critical Linux kernel security updates without "
                 "rebooting. Safe to disable, but you will need to manually "
                 "reboot more often for updates.",
-        "safety": f"{GREEN}✅ SAFE.{RESET}"
+        "safety": f"{GREEN}[ OK ] SAFE.{RESET}"
     },
     "apport": {
         "desc": "The system that generates the 'A problem has occurred' pop-up "
                 "windows. It collects debug data for developers. Safe to "
                 "disable to stop annoying pop-ups.",
-        "safety": f"{GREEN}✅ VERY SAFE.{RESET}"
+        "safety": f"{GREEN}[ OK ] VERY SAFE.{RESET}"
     },
     "kerneloops": {
         "desc": "Specifically tracks and reports Linux kernel 'oopses' (minor "
                 "crashes) to a central database. Safe to disable.",
-        "safety": f"{GREEN}✅ VERY SAFE.{RESET}"
+        "safety": f"{GREEN}[ OK ] VERY SAFE.{RESET}"
     },
     "multipathd": {
         "desc": "Used for managing multiple paths to storage devices (typical in "
                 "high-end Enterprise SANs). Completely unnecessary for almost "
                 "all home or desktop users.",
-        "safety": f"{GREEN}✅ SAFE.{RESET}"
+        "safety": f"{GREEN}[ OK ] SAFE.{RESET}"
     },
     "power-profiles-daemon": {
         "desc": "Allows you to switch between 'Power Saver', 'Balanced', and "
                 "'Performance' modes in your desktop settings. Disable with "
                 "caution on laptops.",
-        "safety": f"{YELLOW}⚠️  CAUTION.{RESET}"
+        "safety": f"{YELLOW}[WARNING] CAUTION.{RESET}"
     },
     "switcheroo-control": {
         "desc": "Used on laptops with two graphics cards (e.g., Intel + NVIDIA) "
                 "to switch between them for power saving. Disable only if "
                 "you have a single GPU.",
-        "safety": f"{GREEN}✅ SAFE.{RESET}"
+        "safety": f"{GREEN}[ OK ] SAFE.{RESET}"
     },
     "apt-news.service": {
         "desc": "A small service that fetches news and announcements about "
                 "Ubuntu updates to show in your terminal. Very safe to "
                 "disable to keep terminal clean.",
-        "safety": f"{GREEN}✅ VERY SAFE.{RESET}"
+        "safety": f"{GREEN}[ OK ] VERY SAFE.{RESET}"
     },
     "motd-news.service": {
         "desc": "Shows news and promotional messages in the 'Message of the Day' "
                 "when you first log in to a terminal. Very safe to disable.",
-        "safety": f"{GREEN}✅ VERY SAFE.{RESET}"
+        "safety": f"{GREEN}[ OK ] VERY SAFE.{RESET}"
     },
     "gnome-remote-desktop": {
         "desc": "Allows you to remotely control your screen using the RDP or VNC "
                 "protocols. Disable to prevent anyone from remotely accessing "
                 "your desktop.",
-        "safety": f"{GREEN}✅ SAFE.{RESET}"
+        "safety": f"{GREEN}[ OK ] SAFE.{RESET}"
     }
 }
 
@@ -191,7 +191,8 @@ def secure_stop_service(service_name):
 
 def optimize_services():
     clear_screen()
-    print(f"{CYAN}{BOLD}❯ SYSTEM SERVICE OPTIMIZER{RESET}\n")
+    section_header("SYSTEM SERVICE OPTIMIZER")
+    print()
     if not check_sudo():
         print(f"\n{RED}[!] Optimization Aborted.{RESET}")
         time.sleep(1.5)
@@ -205,12 +206,8 @@ def optimize_services():
                     ['systemctl', 'is-active', '--quiet', s]).returncode == 0:
                 active.append(s)
     if not active:
-        print(f"{GREEN}[✓] No target services running.{RESET}")
-        print(
-            f"\n{YELLOW}Press [Enter] to return...{RESET}",
-            end="",
-            flush=True)
-        wait_for_enter()
+        print(f"{GREEN}[ OK ] No target services running.{RESET}")
+        footer_prompt("return to menu")
         return
     print(f"{'#':<3} | {'SERVICE NAME':<30} | {'STATUS'}")
     print(f"{DIM}{'-' * TERMINAL_WIDTH}{RESET}")
@@ -227,7 +224,7 @@ def optimize_services():
             f"{YELLOW}--- {t.upper()} ---{RESET}\n\n"
             f"Desc: {info['desc']}\nSafety: {info['safety']}\n")
         print(f"{DIM}{'-' * TERMINAL_WIDTH}{RESET}")
-        print(f"{RED}{BOLD}  ⚠  WARNING — DEEP NEUTRALIZATION{RESET}")
+        print(f"{RED}{BOLD}  [!] WARNING — DEEP NEUTRALIZATION{RESET}")
         print(f"{WHITE}  This will perform TWO permanent actions:{RESET}")
         print(
             f"  {RED}1. STOP{RESET}    — Kills the service "
@@ -246,15 +243,11 @@ def optimize_services():
             print(f"\n{CYAN}[*] Neutralizing {t}...{RESET}")
             if secure_stop_service(t):
                 logger.info(f"User neutralized service: {t}")
-                print(f"\n{GREEN}[✓] Neutralized.{RESET}")
+                print(f"\n{GREEN}[ OK ] Neutralized.{RESET}")
             else:
                 logger.error(f"Failed to neutralize service: {t}")
                 print(f"\n{RED}[X] Error.{RESET}")
-            print(
-                f"\n{YELLOW}Press [Enter] to return...{RESET}",
-                end="",
-                flush=True)
-            wait_for_enter()
+            footer_prompt("return to menu")
         else:
             print(f"\n{YELLOW}[*] Cancelled.{RESET}")
             time.sleep(1.2)

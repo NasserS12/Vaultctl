@@ -12,9 +12,10 @@ from datetime import datetime
 
 from core.logging_setup import logger
 from ui.colors import (
-    RESET, WHITE, CYAN, GREEN, YELLOW, RED, DIM, BOLD,
+    RESET, WHITE, CYAN, GREEN, YELLOW, RED, DIM,
     OK, WARN, TERMINAL_WIDTH,
 )
+from ui.terminal import section_header
 
 
 def get_uptime():
@@ -25,7 +26,7 @@ def get_uptime():
 
 
 def show_ubuntu_pro_status():
-    print(f"{CYAN}{BOLD}❯ UBUNTU PRO & ESM STATUS{RESET}")
+    section_header("UBUNTU PRO & ESM STATUS")
     try:
         if not shutil.which('pro') and not shutil.which('ubuntu-advantage'):
             print(f"Ubuntu Pro    : {YELLOW}Tool not installed{RESET}")
@@ -103,7 +104,7 @@ def show_ubuntu_pro_status():
 
 
 def show_snap_status():
-    print(f"{CYAN}{BOLD}❯ SNAP PACKAGES STATUS{RESET}")
+    section_header("SNAP PACKAGES STATUS")
     try:
         if not shutil.which('snap'):
             print(f"Snap Service  : {YELLOW}Not installed{RESET}")
@@ -117,8 +118,8 @@ def show_snap_status():
         snapd_active = svc.stdout.strip() == 'active'
         status_color = GREEN if snapd_active else RED
         print(
-            f"Snap Service  : {status_color}● {
-                svc.stdout.strip().upper()}{RESET}")
+            f"Snap Service  : {status_color}"
+            f"[{svc.stdout.strip().upper()}]{RESET}")
 
         if not snapd_active:
             print(f"Status        : {RED}snapd is not running{RESET}")
@@ -190,7 +191,7 @@ def show_snap_status():
 
 
 def show_pending_updates():
-    print(f"{CYAN}{BOLD}❯ PENDING SYSTEM UPDATES{RESET}")
+    section_header("PENDING SYSTEM UPDATES")
     try:
         result = subprocess.run(
             ['apt', 'list', '--upgradable'],
@@ -235,7 +236,7 @@ def show_pending_updates():
 
 
 def show_sys_info():
-    print(f"{CYAN}{BOLD}❯ SYSTEM INFORMATION{RESET}")
+    section_header("SYSTEM INFORMATION")
     print(f"  {DIM}Hostname{RESET}  {WHITE}{platform.node()}{RESET}")
     print(
         f"  {DIM}OS      {RESET}  {WHITE}{
@@ -268,7 +269,7 @@ def show_sys_info():
 
 
 def show_cpu_status():
-    print(f"{CYAN}{BOLD}❯ CPU STATUS{RESET}")
+    section_header("CPU STATUS")
     freq = psutil.cpu_freq()
     cpu_usage = psutil.cpu_percent(interval=None)
     color = GREEN if cpu_usage < 50 else YELLOW if cpu_usage < 80 else RED
@@ -309,7 +310,7 @@ def show_cpu_status():
 
 
 def show_mem_status():
-    print(f"{CYAN}{BOLD}❯ MEMORY STATUS{RESET}")
+    section_header("MEMORY STATUS")
     mem = psutil.virtual_memory()
     swap = psutil.swap_memory()
     def to_gb(b): return b / (1024**3)
@@ -334,7 +335,8 @@ def show_mem_status():
 
 
 def show_disk_status():
-    print(f"{CYAN}{BOLD}❯ STORAGE STATUS{RESET}\n")
+    section_header("STORAGE STATUS")
+    print()
     total_used = 0
     total_free = 0
     drives = []
@@ -389,7 +391,7 @@ def show_disk_status():
 
 
 def show_active_users():
-    print(f"{CYAN}{BOLD}❯ ACTIVE LOGGED-IN USERS{RESET}")
+    section_header("ACTIVE LOGGED-IN USERS")
     users = psutil.users()
     if not users:
         print(f"  {DIM}No other users logged in.{RESET}")
@@ -414,7 +416,7 @@ def show_active_users():
 def show_battery_status():
     battery = psutil.sensors_battery()
     if battery:
-        print(f"{CYAN}{BOLD}❯ POWER & BATTERY STATUS{RESET}")
+        section_header("POWER & BATTERY STATUS")
         plugged = (
             f"{GREEN}Charging ⚡{RESET}" if battery.power_plugged
             else f"{YELLOW}On Battery{RESET}")
@@ -431,7 +433,7 @@ def show_battery_status():
             t_color = GREEN if h >= 2 else YELLOW if h >= 1 else RED
             print(f"  {DIM}Remaining{RESET}  {t_color}{h}h {m}m{RESET}")
     else:
-        print(f"{CYAN}{BOLD}❯ POWER STATUS{RESET}")
+        section_header("POWER STATUS")
         print(
             f"  {DIM}Source   {RESET}  {GREEN}AC Wall Power{RESET}  "
             f"{DIM}(No Battery){RESET}")

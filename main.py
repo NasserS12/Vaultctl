@@ -17,11 +17,12 @@ from core.logging_setup import logger
 from ui.terminal import early_lock_terminal
 early_lock_terminal()
 
-from ui.colors import RESET, WHITE, CYAN, GREEN, YELLOW, RED, DIM, BOLD, FAIL, TERMINAL_WIDTH
+from ui.colors import RESET, WHITE, CYAN, GREEN, YELLOW, RED, DIM, BOLD, TERMINAL_WIDTH
 from ui.terminal import (
     set_echo, clear_screen, flush_input, get_confirmation, terminal_manager,
-    wait_for_enter,
+    footer_prompt,
 )
+from core.version import VERSION
 
 from modules.system_scan import run_full_scan
 from modules.process_manager import manage_processes_live
@@ -31,6 +32,9 @@ from modules.service_optimizer import optimize_services
 
 
 def print_startup_message():
+    """Runs the privilege-setup flow and returns whether the session
+    ends up with root/sudo access (used later for the menu status line)."""
+    root_enabled = False
     if os.name == 'posix':
         if os.getuid() != 0:
             set_echo(True)
@@ -44,7 +48,7 @@ def print_startup_message():
                 f"{pad}  {DIM}Root access unlocks: "
                 f"SSH Audit · Firewall · Service Control{RESET}\n")
             user_agreed = get_confirmation(
-                f"{pad}  {CYAN}❯{RESET} Enable root? "
+                f"{pad}  {CYAN}>{RESET} Enable root? "
                 f"{DIM}(y/N){RESET}: ")
 
             if user_agreed:
@@ -57,22 +61,23 @@ def print_startup_message():
             ).returncode == 0
 
             print(f"\n{pad}{DIM}{'─' * TERMINAL_WIDTH}{RESET}\n")
+            root_enabled = has_cache_final
             if has_cache_final:
                 if user_agreed:
                     print(
-                        f"{pad}  {GREEN}✓{RESET}  {WHITE}"
+                        f"{pad}  {GREEN}[ OK ]{RESET}  {WHITE}"
                         f"Authenticated — Full access enabled{RESET}")
                     logger.info("Session started: authenticated with sudo.")
                 else:
                     print(
-                        f"{pad}  {GREEN}✓{RESET}  {WHITE}"
+                        f"{pad}  {GREEN}[ OK ]{RESET}  {WHITE}"
                         f"Active sudo session detected — "
                         f"Full access available{RESET}")
                     logger.info(
                         "Session started: pre-existing sudo cache detected.")
             else:
                 print(
-                    f"{pad}  {YELLOW}⚠{RESET}  {WHITE}"
+                    f"{pad}  {YELLOW}[WARNING]{RESET}  {WHITE}"
                     f"Standard user mode{RESET}  {DIM}"
                     f"— Some features restricted{RESET}")
                 logger.info(
@@ -83,17 +88,19 @@ def print_startup_message():
         else:
             cols = shutil.get_terminal_size().columns
             pad = ' ' * max(0, (cols - TERMINAL_WIDTH) // 2)
+            root_enabled = True
             print(
-                f"\n{pad}  {GREEN}✓{RESET}  {WHITE}"
+                f"\n{pad}  {GREEN}[ OK ]{RESET}  {WHITE}"
                 f"Running as Root (UID 0) — Full access{RESET}")
             logger.info("Session started: running as real root (UID 0).")
     else:
-        print(f"\n  {YELLOW}⚠{RESET}  {WHITE}Standard user mode{RESET}")
+        print(f"\n  {YELLOW}[WARNING]{RESET}  {WHITE}Standard user mode{RESET}")
         logger.info("Session started: non-POSIX system, standard user mode.")
     time.sleep(2.0)
     flush_input()
     clear_screen()
     set_echo(True)
+    return root_enabled
 
 
 def header():
@@ -109,10 +116,10 @@ def header():
         '  ╚═══╝  ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝    ╚═════╝   ╚═╝   ╚══════╝',
     ]
 
-    tool_name = '[ VAULTCTL — Secure System Control ]\n'
+    tool_name = f'[ VAULTCTL — Secure System Control ]  [ v{VERSION} ]\n'
     slogan = 'Know Your System. Own Your Security.\n'
     credits = '(Developed by Nasser)'
-    bar = '-' * min(columns, 70)
+    bar = '=' * min(columns, 70)
 
     def center(text):
         text = text[:columns]
@@ -135,9 +142,27 @@ def header():
     print(f"{RED}{center(bar)}{RESET}\n")
 
 
+def menu_row(pad, num, label, desc, num_color=CYAN):
+    """Prints one main-menu entry with a dotted leader between the
+    label and its description, so columns stay aligned regardless of
+    label length."""
+    LEADER_COL = 34
+    dots = '.' * max(2, LEADER_COL - len(label))
+    print(
+        f"{pad}  {num_color}[{num}]{RESET} {WHITE}{label}{RESET}"
+        f"{DIM}{dots}{RESET} {DIM}{desc}{RESET}")
+
+
+def get_load_avg_text():
+    try:
+        return f"{os.getloadavg()[0]:.2f}"
+    except (OSError, AttributeError):
+        return "N/A"
+
+
 def main():
     logger.info("=== Diagnostic Tool started ===")
-    print_startup_message()
+    root_enabled = print_startup_message()
     try:
         while True:
             clear_screen()
@@ -146,53 +171,41 @@ def main():
             cols = shutil.get_terminal_size().columns
             pad = ' ' * max(0, (cols - TERMINAL_WIDTH) // 2)
 
-            print(f"{pad}{DIM}{'─' * TERMINAL_WIDTH}{RESET}")
-            print(f"{pad}{'MAIN MENU':^{TERMINAL_WIDTH}}")
-            print(f"{pad}{DIM}{'─' * TERMINAL_WIDTH}{RESET}")
-            print()
+            title_txt = " [ MAIN MENU ]"
+            status_txt = (
+                f"root: {'YES' if root_enabled else 'NO'}  |  "
+                f"load: {get_load_avg_text()}")
+            gap = max(2, TERMINAL_WIDTH - len(title_txt) - len(status_txt))
+
             print(
-                f"{pad}  {CYAN}[1]{RESET}  {WHITE}"
-                f"Full System Scan{RESET}              "
-                f"{DIM}CPU · RAM · Disk · Battery · +More{RESET}")
+                f"{pad}{CYAN}{BOLD}{title_txt}{RESET}"
+                f"{' ' * gap}{DIM}{status_txt}{RESET}")
+            print(f"{pad}{DIM}{'-' * TERMINAL_WIDTH}{RESET}")
             print()
-            print(
-                f"{pad}  {CYAN}[2]{RESET}  {WHITE}"
-                f"Live Process Manager{RESET}          "
-                f"{DIM}Monitor & Kill Processes{RESET}")
+            menu_row(pad, 1, "Full System Scan",
+                     "CPU . RAM . Disk . Battery . +More")
+            menu_row(pad, 2, "Live Process Manager",
+                     "Monitor & Kill Processes")
+            menu_row(pad, 3, "Network & Firewall Audit",
+                     "Ports . UFW . Connections")
+            menu_row(pad, 4, "SSH Security Hardening",
+                     "Config . Keys . Risk Audit")
+            menu_row(pad, 5, "Service Optimizer",
+                     "Manage & Neutralize Services")
             print()
-            print(
-                f"{pad}  {CYAN}[3]{RESET}  {WHITE}"
-                f"Network & Firewall Audit{RESET}      "
-                f"{DIM}Ports · UFW · Connections{RESET}")
+            print(f"{pad}  {RED}[6]{RESET} {WHITE}Exit{RESET}")
             print()
-            print(
-                f"{pad}  {CYAN}[4]{RESET}  {WHITE}"
-                f"SSH Security Hardening{RESET}        "
-                f"{DIM}Config · Keys · Risk Audit{RESET}")
-            print()
-            print(
-                f"{pad}  {CYAN}[5]{RESET}  {WHITE}"
-                f"Service Optimizer{RESET}             "
-                f"{DIM}Manage & Neutralize Services{RESET}")
-            print()
-            print(f"{pad}  {RED}[6]{RESET}  {WHITE}Exit{RESET}")
-            print()
-            print(f"{pad}{DIM}{'─' * TERMINAL_WIDTH}{RESET}\n")
+            print(f"{pad}{DIM}{'-' * TERMINAL_WIDTH}{RESET}\n")
 
             flush_input()
-            choice = input(f"{pad}  {CYAN}❯{RESET} ").strip()
+            choice = input(f"{pad}  {CYAN}>{RESET} ").strip()
 
             if choice == "1":
                 logger.info("User selected: Full System Scan")
                 with terminal_manager(echo=False):
                     clear_screen()
                     run_full_scan()
-                    print(
-                        f"\n{YELLOW}Press [Enter] to return "
-                        f"to Main Menu...{RESET}",
-                        end="",
-                        flush=True)
-                    wait_for_enter()
+                    footer_prompt("return to menu")
             elif choice == "2":
                 logger.info("User selected: Live Process Manager")
                 with terminal_manager(echo=True):
@@ -218,7 +231,7 @@ def main():
                         'Session terminated. Stay secure.':^{cols}}{RESET}\n")
                 sys.exit(0)
             else:
-                print(f"\n{pad}  {FAIL}  Invalid choice — press [1-6]{RESET}")
+                print(f"\n{pad}  {RED}[!] Invalid choice — press [1-6]{RESET}")
                 time.sleep(1.5)
     except KeyboardInterrupt:
         set_echo(True)
