@@ -168,7 +168,8 @@ def show_snap_status():
         if lines:
             print(f"\n{'NAME':<25} {'VERSION':<15} {'STATUS'}")
             print(f"{DIM}{'-' * TERMINAL_WIDTH}{RESET}")
-            for line in lines:
+            MAX_DISPLAY = 15
+            for line in lines[:MAX_DISPLAY]:
                 parts = line.split()
                 if len(parts) < 2:
                     continue
@@ -179,6 +180,9 @@ def show_snap_status():
                 else:
                     status = f"{OK} Latest{RESET}"
                 print(f"{name:<25} {version:<15} {status}")
+            if len(lines) > MAX_DISPLAY:
+                remaining = len(lines) - MAX_DISPLAY
+                print(f"{DIM}... and {remaining} more package(s).{RESET}")
 
     except subprocess.TimeoutExpired:
         print(f"Status : {RED}Timed out waiting for snap{RESET}")
@@ -359,7 +363,7 @@ def show_sys_info():
     print(f"  {DIM}Host    {RESET}  {WHITE}{get_host_info()}{RESET}")
     print(f"  {DIM}OS      {RESET}  {WHITE}{get_os_pretty_name()}{RESET}")
     print(f"  {DIM}Kernel  {RESET}  {WHITE}{platform.release()}{RESET}")
-    print(f"  {DIM}Package{RESET} {WHITE}{get_package_counts()}{RESET}")
+    print(f"  {DIM}Package{RESET}   {WHITE}{get_package_counts()}{RESET}")
     print(f"  {DIM}Terminal{RESET}  {WHITE}{get_terminal_info()}{RESET}")
     print(f"  {DIM}Arch    {RESET}  {WHITE}{platform.machine()}{RESET}")
     print(f"  {DIM}Uptime  {RESET}  {WHITE}{get_uptime()}{RESET}")  
