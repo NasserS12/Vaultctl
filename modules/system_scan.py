@@ -235,13 +235,20 @@ def show_pending_updates():
     print(f"{DIM}{'-' * TERMINAL_WIDTH}{RESET}")
 
 
+def get_os_pretty_name():
+    """Read the distro's friendly name from /etc/os-release."""
+    with open('/etc/os-release', 'r') as f:
+        content = f.read()
+    for line in content.splitlines():
+        if line.startswith('PRETTY_NAME='):
+            return line.split('=', 1)[1].strip('"')
+    return "Unknown Linux"
+
 def show_sys_info():
     section_header("SYSTEM INFORMATION")
     print(f"  {DIM}Hostname{RESET}  {WHITE}{platform.node()}{RESET}")
-    print(
-        f"  {DIM}OS      {RESET}  {WHITE}{
-            platform.system()} {
-            platform.release()}{RESET}")
+    print(f"  {DIM}OS      {RESET}  {WHITE}{get_os_pretty_name()}{RESET}")
+    print(f"  {DIM}Kernel  {RESET}  {WHITE}{platform.release()}{RESET}")
     print(f"  {DIM}Arch    {RESET}  {WHITE}{platform.machine()}{RESET}")
     print(f"  {DIM}Uptime  {RESET}  {WHITE}{get_uptime()}{RESET}")
 
