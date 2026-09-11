@@ -274,12 +274,76 @@ def get_package_counts():
     return f"{dpkg_count} (dpkg), {snap_count} (snap)"
 
 
+KNOWN_TERMINALS = {
+    'ptyxis', 'gnome-terminal-server', 'konsole', 'xterm',
+    'alacritty', 'kitty', 'tilix', 'terminator', 'xfce4-terminal',
+    }
+
+
+TERMINAL_PACKAGE_NAMES = {
+    'ptyxis': 'ptyxis',
+    'gnome-terminal-server': 'gnome-terminal',
+    'konsole': 'konsole',
+    'xterm': 'xterm',
+    'alacritty': 'alacritty',
+    'kitty': 'kitty',
+    'tilix': 'tilix',
+    'terminator': 'terminator',
+    'xfce4-terminal': 'xfce4-terminal',
+}
+
+def get_terminal_version(process_name):
+    """Look up the installed package version for a terminal
+    emulator's process name, via dpkg."""
+    pkg_name = TERMINAL_PACKAGE_NAMES.get(process_name, process_name)
+    try:
+        result = subprocess.run(
+            ['dpkg-query', '-W', '-f=${Version}', pkg_name],
+            capture_output=True, text=True, timeout=5
+        )
+        if result.returncode == 0:
+            full_version = result.stdout.strip()
+            return full_version.split('-')[0]
+
+    except Exception as e:
+        logger.debug(f"get_terminal_version failed: {e}")
+    return None
+
+def get_terminal_process_name():
+    """Walk up the process tree from this script until we find a
+    known terminal emulator process."""
+    try:
+        proc = psutil.Process(os.getpid())
+        while proc is not None:
+            name = proc.name()
+            if name in KNOWN_TERMINALS:
+                return name
+            proc = proc.parent()
+    except Exception as e:
+        logger.debug(f"get_terminal_process_name failed: {e}")
+    return None
+
+def get_terminal_info():
+    """Return a formatted string like 'Ptyxis 50.1', or 'Unknown'
+    if detection fails."""
+    process_name = get_terminal_process_name()
+    if process_name is None:
+        return "Unknown"
+
+    version = get_terminal_version(process_name)
+    display_name = process_name.replace('-', ' ').title()
+
+    if version:
+        return f"{display_name} {version}"
+    return display_name
+
 def show_sys_info():
     section_header("SYSTEM INFORMATION")
     print(f"  {DIM}Hostname{RESET}  {WHITE}{platform.node()}{RESET}")
     print(f"  {DIM}OS      {RESET}  {WHITE}{get_os_pretty_name()}{RESET}")
     print(f"  {DIM}Kernel  {RESET}  {WHITE}{platform.release()}{RESET}")
     print(f"  {DIM}Package{RESET} {WHITE}{get_package_counts()}{RESET}")
+    print(f"  {DIM}Terminal{RESET}  {WHITE}{get_terminal_info()}{RESET}")
     print(f"  {DIM}Arch    {RESET}  {WHITE}{platform.machine()}{RESET}")
     print(f"  {DIM}Uptime  {RESET}  {WHITE}{get_uptime()}{RESET}")  
     print(f"{DIM}{'-' * TERMINAL_WIDTH}{RESET}")
