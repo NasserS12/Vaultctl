@@ -337,9 +337,26 @@ def get_terminal_info():
         return f"{display_name} {version}"
     return display_name
 
+def get_host_info():
+    """Read the physical machine's vendor + model from DMI sysfs
+    entries (e.g. 'LENOVO ThinkPad E14 Gen 7')."""
+    def read_dmi(field):
+        try:
+            with open(f'/sys/class/dmi/id/{field}', 'r') as f:
+                return f.read().strip()
+        except Exception:
+            return ""
+
+    vendor = read_dmi('sys_vendor')
+    model = read_dmi('product_family') or read_dmi('product_name')
+
+    parts = [p for p in [vendor, model] if p]
+    return " ".join(parts) if parts else "Unknown"
+
 def show_sys_info():
     section_header("SYSTEM INFORMATION")
     print(f"  {DIM}Hostname{RESET}  {WHITE}{platform.node()}{RESET}")
+    print(f"  {DIM}Host    {RESET}  {WHITE}{get_host_info()}{RESET}")
     print(f"  {DIM}OS      {RESET}  {WHITE}{get_os_pretty_name()}{RESET}")
     print(f"  {DIM}Kernel  {RESET}  {WHITE}{platform.release()}{RESET}")
     print(f"  {DIM}Package{RESET} {WHITE}{get_package_counts()}{RESET}")
