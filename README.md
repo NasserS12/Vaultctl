@@ -136,6 +136,14 @@ All significant events are written to `diagnostic_tool.log` in the same director
 2025-01-15 14:35:12 [INFO] Service neutralized: whoopsie
 ```
 
+## Development Notes
+
+This project was built with AI-assisted development (Claude) under my
+direction — I defined the architecture, reviewed every change, wrote
+the test cases, and made all design decisions. AI was used as a
+pair-programming tool, not an autonomous author.
+
+
 ## Author
 
 Developed by **Nasser**
