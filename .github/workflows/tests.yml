@@ -2,13 +2,14 @@ name: Tests
 
 on:
   push:
-    branches: [main,dev]
+    branches: [main, dev]
   pull_request:
-    branches: [main,dev]
+    branches: [main, dev]
 
 jobs:
   pytest:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
 
@@ -19,6 +20,5 @@ jobs:
       - name: Install dependencies
         run: pip install pytest psutil
 
-
       - name: Run tests
-        run: pytest tests / -v
+        run: pytest tests/ -v -p no:cacheprovider < /dev/null
