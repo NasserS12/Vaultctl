@@ -3,7 +3,7 @@ import os
 import subprocess
 
 from core.logging_setup import logger
-from ui.colors import YELLOW, RED, RESET
+from ui.colors import RED, RESET, YELLOW
 
 
 def get_user_home():

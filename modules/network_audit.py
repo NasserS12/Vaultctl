@@ -14,11 +14,23 @@ import psutil
 from core.logging_setup import logger
 from core.sudo import check_sudo
 from ui.colors import (
-    RESET, CYAN, GREEN, YELLOW, RED, WHITE, DIM,
-    OK, WARN, FAIL, TERMINAL_WIDTH,
+    CYAN,
+    DIM,
+    FAIL,
+    GREEN,
+    OK,
+    RED,
+    RESET,
+    TERMINAL_WIDTH,
+    WARN,
+    WHITE,
+    YELLOW,
 )
 from ui.terminal import (
-    terminal_manager, clear_screen, section_header, footer_prompt,
+    clear_screen,
+    footer_prompt,
+    section_header,
+    terminal_manager,
 )
 
 # Well-known trusted DNS servers

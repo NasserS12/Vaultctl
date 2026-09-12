@@ -5,31 +5,35 @@ Entry point only. All feature logic lives in modules/; shared UI and
 core helpers live in ui/ and core/. See README.md for the module map.
 """
 import os
-import sys
-import subprocess
 import shutil
+import subprocess
+import sys
 import time
 
-# --- Logging must be configured before anything else touches it ---
 from core.logging_setup import logger
+from core.version import VERSION
+from modules.network_audit import show_network_audit
+from modules.process_manager import manage_processes_live
+from modules.service_optimizer import optimize_services
+from modules.ssh_audit import audit_ssh_security
+from modules.system_scan import run_full_scan
+from ui.colors import BOLD, CYAN, DIM, GREEN, RED, RESET, TERMINAL_WIDTH, WHITE, YELLOW
+from ui.terminal import (
+    clear_screen,
+    early_lock_terminal,
+    flush_input,
+    footer_prompt,
+    get_confirmation,
+    set_echo,
+    terminal_manager,
+)
 
 # --- ABSOLUTE TOP PRIORITY: LOCK TERMINAL IMMEDIATELY ---
-from ui.terminal import early_lock_terminal
+# Runs as the first executable statement — all imports above only
+# define functions/variables and perform no I/O themselves, so this
+# still executes before any print()/input() happens anywhere in the
+# program.
 early_lock_terminal()
-
-from ui.colors import RESET, WHITE, CYAN, GREEN, YELLOW, RED, DIM, BOLD, TERMINAL_WIDTH
-from ui.terminal import (
-    set_echo, clear_screen, flush_input, get_confirmation, terminal_manager,
-    footer_prompt,
-)
-from core.version import VERSION
-
-from modules.system_scan import run_full_scan
-from modules.process_manager import manage_processes_live
-from modules.network_audit import show_network_audit
-from modules.ssh_audit import audit_ssh_security
-from modules.service_optimizer import optimize_services
-
 
 def print_startup_message():
     """Runs the privilege-setup flow and returns whether the session

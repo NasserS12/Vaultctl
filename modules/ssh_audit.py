@@ -10,9 +10,12 @@ import time
 
 from core.logging_setup import logger
 from core.sudo import check_sudo
-from ui.colors import RESET, CYAN, GREEN, YELLOW, RED, WHITE, DIM, OK, TERMINAL_WIDTH
+from ui.colors import CYAN, DIM, GREEN, OK, RED, RESET, TERMINAL_WIDTH, WHITE, YELLOW
 from ui.terminal import (
-    clear_screen, terminal_manager, section_header, footer_prompt,
+    clear_screen,
+    footer_prompt,
+    section_header,
+    terminal_manager,
 )
 
 
