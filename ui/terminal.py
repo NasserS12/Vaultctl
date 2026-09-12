@@ -7,7 +7,7 @@ import time
 from contextlib import contextmanager
 
 from core.logging_setup import logger
-from ui.colors import RED, RESET, CYAN, BOLD, DIM, TERMINAL_WIDTH
+from ui.colors import BOLD, CYAN, DIM, RED, RESET, TERMINAL_WIDTH
 
 
 def early_lock_terminal():

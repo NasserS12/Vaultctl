@@ -9,10 +9,14 @@ import time
 
 from core.logging_setup import logger
 from core.sudo import check_sudo
-from ui.colors import RESET, CYAN, GREEN, YELLOW, RED, WHITE, DIM, BOLD, TERMINAL_WIDTH
+from ui.colors import BOLD, CYAN, DIM, GREEN, RED, RESET, TERMINAL_WIDTH, WHITE, YELLOW
 from ui.terminal import (
-    terminal_manager, get_confirmation, clear_screen,
-    flush_input, section_header, footer_prompt,
+    clear_screen,
+    flush_input,
+    footer_prompt,
+    get_confirmation,
+    section_header,
+    terminal_manager,
 )
 
 # SAFETY BLACKLIST — these can NEVER be masked by the optimizer,

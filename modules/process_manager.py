@@ -5,14 +5,18 @@ and kill by table index or direct PID (SIGTERM & SIGKILL).
 """
 import os
 import time
-import psutil
 from datetime import datetime
 
+import psutil
+
 from core.logging_setup import logger
-from ui.colors import RESET, CYAN, GREEN, YELLOW, RED, WHITE, DIM
+from ui.colors import CYAN, DIM, GREEN, RED, RESET, WHITE, YELLOW
 from ui.terminal import (
-    clear_screen, flush_input, get_confirmation,
-    section_header, footer_prompt,
+    clear_screen,
+    flush_input,
+    footer_prompt,
+    get_confirmation,
+    section_header,
 )
 
 KERNEL_PID_THRESHOLD = 100

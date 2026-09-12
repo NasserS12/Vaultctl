@@ -4,16 +4,25 @@ CPU, RAM, Disk, Battery, active users, pending APT/Snap updates,
 and Ubuntu Pro / ESM status.
 """
 import os
+import platform
 import shutil
 import subprocess
-import platform
-import psutil
 from datetime import datetime
+
+import psutil
 
 from core.logging_setup import logger
 from ui.colors import (
-    RESET, WHITE, CYAN, GREEN, YELLOW, RED, DIM,
-    OK, WARN, TERMINAL_WIDTH,
+    CYAN,
+    DIM,
+    GREEN,
+    OK,
+    RED,
+    RESET,
+    TERMINAL_WIDTH,
+    WARN,
+    WHITE,
+    YELLOW,
 )
 from ui.terminal import section_header
 
