@@ -18,7 +18,10 @@ jobs:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: pip install pytest psutil
+        run: pip install pytest psutil ruff
+
+      - name: Run linter
+        run: ruff check .
 
       - name: Run tests
         run: pytest tests/ -v -p no:cacheprovider < /dev/null
