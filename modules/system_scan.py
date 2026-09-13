@@ -248,9 +248,9 @@ def show_pending_updates():
     print(f"{DIM}{'-' * TERMINAL_WIDTH}{RESET}")
 
 
-def get_os_pretty_name():
+def get_os_pretty_name(path = '/etc/os-release'):
     """Read the distro's friendly name from /etc/os-release."""
-    with open('/etc/os-release', 'r') as f:
+    with open(path, 'r') as f:
         content = f.read()
     for line in content.splitlines():
         if line.startswith('PRETTY_NAME='):
