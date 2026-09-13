@@ -22,6 +22,11 @@ from ui.terminal import (
 KERNEL_PID_THRESHOLD = 100
 
 
+def is_kernel_protected_pid(pid, threshold=KERNEL_PID_THRESHOLD):
+    """True if `pid` belongs to the protected kernel/system PID
+    range and must never be targeted for termination."""
+    return pid <= threshold
+
 def manage_processes_live():
     sort_by = 'memory_percent'
 
@@ -34,7 +39,7 @@ def manage_processes_live():
         return WHITE
 
     def do_kill(pid_target, force=False):
-        if pid_target <= KERNEL_PID_THRESHOLD:
+        if is_kernel_protected_pid(pid_target):
             print(
                 f"\n{RED}[X] Refused: PID {pid_target} is a "
                 f"kernel/system process.{RESET}")
