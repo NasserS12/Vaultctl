@@ -132,3 +132,29 @@ class TestSecureStopServiceBlacklistProtection:
         assert result is True
         calls = mock_run.call_args_list
         assert calls[1].args[0][3] == "whoopsie.service"
+
+
+@patch("modules.service_optimizer.subprocess.run")
+def test_prefix_match_does_not_stop_unrelated_service(mock_run):
+    """REGRESSION TEST: a short/generic service_name must never match
+    units that merely share the same text prefix without a proper
+    '.' or '-' boundary."""
+    scan_result = MagicMock()
+    scan_result.returncode = 0
+    scan_result.stdout = (
+        "cups.service          enabled\n"
+        "cupsomethingunrelated.service   enabled\n"
+    )
+    mock_run.side_effect = [
+        scan_result,
+        MagicMock(), MagicMock(),
+    ]
+
+    secure_stop_service("cups")
+
+    stopped_units = [
+        call.args[0][3] for call in mock_run.call_args_list
+        if call.args[0][2] == 'stop'
+    ]
+    assert stopped_units == ["cups.service"]
+    assert "cupsomethingunrelated.service" not in stopped_units
