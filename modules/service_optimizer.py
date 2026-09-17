@@ -145,6 +145,14 @@ SERVICE_CATALOG = {
     }
 }
 
+def _is_related_unit(unit_name, service_name):
+    """True only if `unit_name` is the service itself, or a
+    sub-component of it separated by '.' or '-' — never a unit that
+    merely shares the same text prefix with no boundary."""
+    base = unit_name.rsplit('.', 1)[0]
+    if base == service_name:
+        return True
+    return base.startswith(service_name + '-')
 
 def secure_stop_service(service_name):
     """Performs a 'Deep Neutralization' of a service."""
@@ -178,7 +186,9 @@ def secure_stop_service(service_name):
                         '.path',
                         '.timer']):
                     if not any(b in u for b in CRITICAL_BLACKLIST):
-                        units.append(u)
+                        if _is_related_unit(u , service_name):
+
+                            units.append(u)
         if not units:
             units = [f"{service_name}.service"]
         for unit in units:
