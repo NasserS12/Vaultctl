@@ -27,7 +27,7 @@ def get_user_home():
 def check_sudo():
     """Checks for root privileges. Returns True if authenticated."""
     has_sudo_cache = subprocess.run(
-        ['sudo', '-n', 'true'], capture_output=True
+        ['/usr/bin/sudo', '-n', 'true'], capture_output=True
     ).returncode == 0
 
     if os.getuid() == 0 or has_sudo_cache:
@@ -36,7 +36,7 @@ def check_sudo():
         f"{YELLOW}[!] This action requires root privileges. "
         f"Please authenticate...{RESET}")
     try:
-        result = subprocess.run(['sudo', '-v'], check=False)
+        result = subprocess.run(['/usr/bin/sudo', '-v'], check=False)
         success = result.returncode == 0
         if success:
             logger.info("sudo authentication successful.")
