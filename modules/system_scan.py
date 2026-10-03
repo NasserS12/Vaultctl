@@ -310,14 +310,13 @@ def get_terminal_version(process_name):
     emulator's process name, via dpkg."""
     pkg_name = TERMINAL_PACKAGE_NAMES.get(process_name, process_name)
     try:
-        result = subprocess.run(
+        result = subprocess.run( # nosec B603 - fixed arg list, no shell, pkg_name is not user input
             ['dpkg-query', '-W', '-f=${Version}', pkg_name],
             capture_output=True, text=True, timeout=5
         )
         if result.returncode == 0:
             full_version = result.stdout.strip()
             return full_version.split('-')[0]
-
     except Exception as e:
         logger.debug(f"get_terminal_version failed: {e}")
     return None
