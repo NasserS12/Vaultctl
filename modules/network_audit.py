@@ -73,7 +73,7 @@ def audit_ufw_firewall():
     """Audits UFW Firewall status and rules."""
     print(f"{CYAN}[*] Checking Firewall (UFW) Status...{RESET}")
     try:
-        cmd = ['sudo', 'ufw', 'status']
+        cmd = ['/usr/bin/sudo', '/usr/sbin/ufw', 'status']
         res = subprocess.run(
             cmd,
             stdout=subprocess.PIPE,
@@ -103,7 +103,7 @@ def audit_open_ports():
     try:
         # SECTION 1: LISTENING SERVICES
         print(f"\n{YELLOW}  [!] LISTENING SERVICES (Incoming Ports){RESET}")
-        cmd_l = ['sudo', 'ss', '-ltupn']
+        cmd_l = ['/usr/bin/sudo', '/usr/bin/ss', '-ltupn']
         res_l = subprocess.run(
             cmd_l,
             capture_output=True,
@@ -144,7 +144,7 @@ def audit_open_ports():
         print(
             f"\n{YELLOW}  [>] ACTIVE USER APPLICATIONS "
             f"(Outgoing Traffic){RESET}")
-        cmd_a = ['sudo', 'ss', '-atpn']
+        cmd_a = ['/usr/bin/sudo', '/usr/bin/ss', '-atpn']
         res_a = subprocess.run(
             cmd_a,
             capture_output=True,
@@ -190,7 +190,7 @@ def audit_arp_table():
     section_header("ARP TABLE — LOCAL NETWORK DEVICES")
     try:
         res = subprocess.run(
-            ['arp', '-n'], capture_output=True, text=True, timeout=5.0)
+            ['/usr/sbin/arp', '-n'], capture_output=True, text=True, timeout=5.0)
         lines = [
             line for line in res.stdout.strip().split('\n')
             if line and 'Address' not in line and 'incomplete' not in line
@@ -240,7 +240,7 @@ def audit_dns_servers():
         # Method 1: resolvectl (preferred — shows active DNS per interface)
         try:
             res = subprocess.run(
-                ['resolvectl', 'status'],
+                ['/usr/bin/resolvectl', 'status'],
                 capture_output=True, text=True, timeout=5.0
             )
             for line in res.stdout.split('\n'):
@@ -345,7 +345,7 @@ def show_network_status():
                               ("Cloudflare", "1.1.1.1")]:
             try:
                 res = subprocess.run(
-                    ['ping', '-c', '1', '-W', '1', target],
+                    ['/usr/bin/ping', '-c', '1', '-W', '1', target],
                     capture_output=True, text=True)
                 if res.returncode == 0:
                     time_match = re.search(r"time=([\d.]+)", res.stdout)
