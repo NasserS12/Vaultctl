@@ -5,3 +5,4 @@ diagnostic_tool.log
 .venv/
 venv/
 *.egg-info/
+bandit_report.json

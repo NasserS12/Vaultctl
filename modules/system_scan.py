@@ -43,7 +43,7 @@ def show_ubuntu_pro_status():
             print(f"{DIM}{'-' * TERMINAL_WIDTH}{RESET}")
             return
 
-        cmd = shutil.which('pro') or 'ubuntu-advantage'
+        cmd = shutil.which('pro') or shutil.which('ubuntu-advantage')
 
         result = subprocess.run(
             [cmd, 'status', '--format', 'tabular'],
@@ -121,7 +121,7 @@ def show_snap_status():
             return
 
         svc = subprocess.run(
-            ['systemctl', 'is-active', 'snapd'],
+            ['/usr/bin/systemctl', 'is-active', 'snapd'],
             capture_output=True, text=True
         )
         snapd_active = svc.stdout.strip() == 'active'
@@ -136,7 +136,7 @@ def show_snap_status():
             return
 
         pkgs = subprocess.run(
-            ['snap', 'list'],
+            ['/usr/bin/snap', 'list'],
             capture_output=True, text=True
         )
         if pkgs.returncode != 0:
@@ -151,7 +151,7 @@ def show_snap_status():
         update_names = []
         try:
             updates = subprocess.run(
-                ['snap', 'refresh', '--list'],
+                ['/usr/bin/snap', 'refresh', '--list'],
                 capture_output=True, text=True,
                 timeout=5
             )
@@ -207,7 +207,7 @@ def show_pending_updates():
     section_header("PENDING SYSTEM UPDATES")
     try:
         result = subprocess.run(
-            ['apt', 'list', '--upgradable'],
+            ['/usr/bin/apt', 'list', '--upgradable'],
             capture_output=True, text=True
         )
         lines = [line for line in result.stdout.strip().split('\n')
@@ -230,7 +230,8 @@ def show_pending_updates():
 
         # Security updates specifically
         sec = subprocess.run(
-            ['apt', 'list', '--upgradable'],
+            ['/usr/bin/apt', 'list', '--upgradable'],
+
             capture_output=True, text=True
         )
         sec_count = sum(1 for line in sec.stdout.split('\n')
@@ -263,7 +264,7 @@ def get_package_counts():
     dpkg_count = 0
     try:
         result = subprocess.run(
-        ['dpkg-query', '-f', '${db:Status-Status}\n', '-W'],
+        ['/usr/bin/dpkg-query', '-f', '${db:Status-Status}\n', '-W'],
         capture_output=True, text=True, timeout=5
     )
         dpkg_count = sum(
@@ -276,7 +277,7 @@ def get_package_counts():
     snap_count = 0
     try:
         result = subprocess.run(
-            ['snap', 'list'],
+            ['/usr/bin/snap', 'list'],
             capture_output=True, text=True, timeout=5
         )
         lines = result.stdout.strip().splitlines()
@@ -310,8 +311,8 @@ def get_terminal_version(process_name):
     emulator's process name, via dpkg."""
     pkg_name = TERMINAL_PACKAGE_NAMES.get(process_name, process_name)
     try:
-        result = subprocess.run( # nosec B603 - fixed arg list, no shell, pkg_name is not user input
-            ['dpkg-query', '-W', '-f=${Version}', pkg_name],
+        result = subprocess.run( 
+            ['/usr/bin/dpkg-query', '-W', '-f=${Version}', pkg_name],
             capture_output=True, text=True, timeout=5
         )
         if result.returncode == 0:

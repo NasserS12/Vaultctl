@@ -47,7 +47,8 @@ def manage_processes_live():
             return
         if pid_target not in visible_pids:
             print(
-                f"\n{YELLOW}[!] PID {pid_target} not in visible list. "
+                # Message text only (contains the word "select"), not a SQL query.
+                f"\n{YELLOW}[!] PID {pid_target} not in visible list. " # nosec B608
                 f"Use kill <#> to select from table.{RESET}")
             time.sleep(1.5)
             return

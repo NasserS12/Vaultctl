@@ -248,8 +248,9 @@ def audit_dns_servers():
                     m = re.search(r'Current DNS Server:\s+(\S+)', line)
                     if m and m.group(1) not in dns_servers:
                         dns_servers.append(m.group(1))
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"resolvectl DNS lookup failed: {e}")
+            
 
         # Method 2: /etc/resolv.conf as fallback
         if not dns_servers:
@@ -261,8 +262,9 @@ def audit_dns_servers():
                             parts = line.split()
                             if len(parts) >= 2 and parts[1] not in dns_servers:
                                 dns_servers.append(parts[1])
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"resolv.conf read failed: {e}")
+                
 
         if not dns_servers:
             print(f"  {WARN} Could not detect DNS servers.{RESET}")
@@ -333,7 +335,8 @@ def show_network_status():
         print(f"  {DIM}Local IP {RESET}  {WHITE}{local_ip}{RESET}")
 
         try:
-            public_ip = urllib.request.urlopen(
+            # Hardcoded https URL, never user-supplied, so no file:/ or custom scheme is possible.
+            public_ip = urllib.request.urlopen( # nosec B310
                 'https://ident.me', timeout=2).read().decode('utf8')
             print(f"  {DIM}Public IP{RESET}  {WHITE}{public_ip}{RESET}")
         except Exception as e:
