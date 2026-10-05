@@ -165,8 +165,8 @@ def secure_stop_service(service_name):
         return False
     try:
         scan_cmd = [
-            'sudo',
-            'systemctl',
+            '/usr/bin/sudo',
+            '/usr/bin/systemctl',
             'list-unit-files',
             '--all',
             f"{service_name}*",
@@ -192,9 +192,9 @@ def secure_stop_service(service_name):
         if not units:
             units = [f"{service_name}.service"]
         for unit in units:
-            subprocess.run(['sudo', 'systemctl', 'stop', unit],
+            subprocess.run(['/usr/bin/sudo', '/usr/bin/systemctl', 'stop', unit],
                            capture_output=True)
-            subprocess.run(['sudo', 'systemctl', 'mask',
+            subprocess.run(['/usr/bin/sudo', '/usr/bin/systemctl', 'mask',
                            '--now', unit], capture_output=True)
         logger.info(f"Service neutralized: {service_name} (units: {units})")
         return True
@@ -217,7 +217,7 @@ def optimize_services():
         print(f"{CYAN}[*] Scanning for services...{RESET}\n")
         for s in SERVICE_CATALOG.keys():
             if subprocess.run(
-                    ['systemctl', 'is-active', '--quiet', s]).returncode == 0:
+                    ['/usr/bin/systemctl', 'is-active', '--quiet', s]).returncode == 0:
                 active.append(s)
     if not active:
         print(f"{GREEN}[ OK ] No target services running.{RESET}")

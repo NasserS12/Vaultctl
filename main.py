@@ -57,11 +57,11 @@ def print_startup_message():
 
             if user_agreed:
                 print(f"\n{pad}  {DIM}Authenticating...{RESET}")
-                subprocess.run(['sudo', '-v'], check=False)
+                subprocess.run(['/usr/bin/sudo', '-v'], check=False)
 
             clear_screen()
             has_cache_final = subprocess.run(
-                ['sudo', '-n', 'true'], capture_output=True
+                ['/usr/bin/sudo', '-n', 'true'], capture_output=True
             ).returncode == 0
 
             print(f"\n{pad}{DIM}{'─' * TERMINAL_WIDTH}{RESET}\n")

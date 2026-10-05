@@ -75,8 +75,8 @@ class TestSecureStopServiceBlacklistProtection:
 
         assert result is True
         calls = mock_run.call_args_list
-        assert calls[1].args[0][:3] == ["sudo", "systemctl", "stop"]
-        assert calls[2].args[0][:3] == ["sudo", "systemctl", "mask"]
+        assert calls[1].args[0][:3] == ["/usr/bin/sudo", "/usr/bin/systemctl", "stop"]
+        assert calls[2].args[0][:3] == ["/usr/bin/sudo", "/usr/bin/systemctl", "mask"]
 
     @patch("modules.service_optimizer.os.name", "posix")
     @patch("modules.service_optimizer.subprocess.run")
