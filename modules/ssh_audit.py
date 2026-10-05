@@ -318,7 +318,7 @@ def audit_ssh_security():
                     is_pam_ready = pam_res.returncode == 0
                     is_ssh_ready = is_2fa_ssh_ready(v_kbd, v_chall)
                     two_fa_active = is_pam_ready and is_ssh_ready
-                except Exception:
+                except Exception as e:
                     logger.debug(f"2FA check failed, reporting as not configured: {e}")
                     
 
