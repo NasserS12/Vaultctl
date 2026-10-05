@@ -76,7 +76,7 @@ def audit_ssh_security():
     print(f"{CYAN}[*] Checking SSH Service Status...{RESET}")
     try:
         status_check = subprocess.run(
-            ['systemctl', 'is-active', 'ssh'],
+            ['/usr/bin/systemctl', 'is-active', 'ssh'],
             stdout=subprocess.PIPE, text=True)
         if status_check.stdout.strip() != "active":
             print(
@@ -115,8 +115,8 @@ def audit_ssh_security():
 
             content = ""
             scanned = []
-            res = subprocess.run(['sudo',
-                                  'cat'] + config_files,
+            res = subprocess.run(['/usr/bin/sudo',
+                                  '/usr/bin/cat'] + config_files,
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE,
                                  text=True)
@@ -126,7 +126,7 @@ def audit_ssh_security():
             else:
                 for fp in config_files:
                     res = subprocess.run(
-                        ['sudo', 'cat', fp],
+                        ['/usr/bin/sudo', '/usr/bin/cat', fp],
                         stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE, text=True)
                     if res.returncode == 0:
@@ -270,7 +270,7 @@ def audit_ssh_security():
                 def check_svc_active(svc_name):
                     try:
                         r = subprocess.run(
-                            ['systemctl', 'is-active', svc_name],
+                            ['/usr/bin/systemctl', 'is-active', svc_name],
                             capture_output=True, text=True, timeout=2)
                         return r.stdout.strip() == 'active'
                     except Exception:
@@ -308,7 +308,7 @@ def audit_ssh_security():
                 two_fa_active = False
                 try:
                     pam_res = subprocess.run(
-                        ['sudo', 'grep', '-q',
+                        ['/usr/bin/sudo', '/usr/bin/grep', '-q',
                          'pam_google_authenticator.so', '/etc/pam.d/sshd'],
                         timeout=2)
                     v_kbd, a_kbd = get_smart_val(
